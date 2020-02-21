@@ -128,7 +128,7 @@ def EfficentNet(inputs,
             inputs, 
             round_filters(32, width_coef, depth_divisor),
             kernel_size=3,
-            strides=(1, 1),
+            strides=(2, 2),
             use_batchnorm=True,
             use_relu=True,
             is_training=is_training
