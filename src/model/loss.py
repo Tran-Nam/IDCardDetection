@@ -1,6 +1,9 @@
 import numpy as np 
 import tensorflow as tf
 from tensorflow.python.ops import array_ops
+import sys
+# sys.path.append('../..')
+# from data.processing import gen_heatmap_groundtruth
 
 
 def smooth_l1_loss(pred, gt, sigma=1):
@@ -16,7 +19,7 @@ def offset_loss(pred, gt, mask):
     mask = tf.stack((mask, mask), axis=-1) # mask for 2 axis in offset map
     l1_loss = smooth_l1_loss(pred, gt)
     l1_loss /= (n_corner + tf.convert_to_tensor(1e-6, dtype=tf.float32))
-    print(l1_loss.get_shape())
+    # print(l1_loss.get_shape())
     return tf.reduce_sum(tf.multiply(l1_loss, mask))
     # return tf.reduce_mean(tf.multiply(l1_loss, mask))
 
@@ -29,7 +32,7 @@ def focal_loss(pred, gt, alpha=2, beta=4):
     reduce_penalty = ones-gt
     per_entry_loss = -(pos_p_sub**alpha * tf.log(tf.clip_by_value(pred, 1e-8, 1.0)) \
         + reduce_penalty**beta * neg_p_sub**alpha * tf.log(tf.clip_by_value(1-pred, 1e-8, 1.0)))
-    print(per_entry_loss.get_shape())
+    # print(per_entry_loss.get_shape())
     # return tf.reduce_sum(per_entry_loss)
     return tf.reduce_mean(per_entry_loss)
 
@@ -37,16 +40,16 @@ def mse_loss(pred, gt):
     # return tf.reduce_sum(tf.keras.losses.MSE(pred, gt))
     return tf.reduce_mean(tf.keras.losses.MSE(pred, gt))
 
-def loss(output, gt):
-    heatmap, offset = output 
-    heatmap_gt, offset_gt, mask = gt 
-    f_loss = focal_loss(heatmap, heatmap_gt)
-    o_loss = offset_loss(offset, offset_gt, mask)
-    return f_loss + o_loss
+# def loss(output, gt):
+#     heatmap, offset = output 
+#     heatmap_gt, offset_gt, mask = gt 
+#     f_loss = focal_loss(heatmap, heatmap_gt)
+#     o_loss = offset_loss(offset, offset_gt, mask)
+#     return f_loss + o_loss
 
 if __name__=='__main__':
     shape = (10, 128, 128, 8)
-    gt = tf.ones(shape)
+    gt = tf.zeros(shape)
     a = tf.reduce_mean(gt)
     b = tf.reduce_sum(gt)
     pred = tf.zeros(shape)
@@ -59,4 +62,4 @@ if __name__=='__main__':
     with tf.Session() as sess:
         le, lf, lo, a, b = sess.run([loss_mse, loss_focal, loss_offset, a, b])
         print(le, lf, lo)
-        print(a, b)
+        # print(a, b)
