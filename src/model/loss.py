@@ -40,12 +40,18 @@ def mse_loss(pred, gt):
     # return tf.reduce_sum(tf.keras.losses.MSE(pred, gt))
     return tf.reduce_mean(tf.keras.losses.MSE(pred, gt))
 
-# def loss(output, gt):
-#     heatmap, offset = output 
-#     heatmap_gt, offset_gt, mask = gt 
-#     f_loss = focal_loss(heatmap, heatmap_gt)
-#     o_loss = offset_loss(offset, offset_gt, mask)
-#     return f_loss + o_loss
+def loss(pred, gt):
+    hm_gt = gt[:, :, :, 0:4]
+    paf_gt = gt[:, :, :, 4:12]
+    off_gt = gt[:, :, :, 12:14]
+    mask_gt = gt[:, :, :, 14:15]
+    hm_pred = pred[:, :, :, 0:4]
+    paf_pred = pred[:, :, :, 4:12]
+    off_pred = pred[:, :, :, 12:14]
+    f_loss = focal_loss(hm_pred, hm_gt)
+    p_loss = mse_loss(paf_pred, paf_gt)
+    o_loss = offset_loss(off_pred, off_gt, mask_gt)
+    return f_loss + p_loss + o_loss
 
 if __name__=='__main__':
     shape = (10, 128, 128, 8)

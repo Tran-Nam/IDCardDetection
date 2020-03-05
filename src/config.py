@@ -12,12 +12,16 @@ PAF_XY_COORDS_PER_LIMB = np.arange(8).reshape(4, 2)
 
 ### TRAINING PARAM
 BATCH_SIZE = 4
-PRETRAINED = False 
-PRETRAINED_PATH = ''
-TRAIN_DATA_PATH = ''
-VAL_DATA_PATH = ''
+PRETRAINED = True 
+PRETRAINED_PATH = '../checkpoint_3/150.ckpt'
+TRAIN_DATA_PATH = '../data/data_record/train.tfrecords'
+VAL_DATA_PATH = '../data/data_record/val.tfrecords'
 
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 5e-4
+DECAY_RATE = 0.95
+DECAY_STEP = 10000
+
 INTERVAL_SAVE = 1000
-MODEL_DIR = '../checkpoint'
+MODEL_DIR = '../checkpoint_3'
+
 

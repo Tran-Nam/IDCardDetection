@@ -1,6 +1,6 @@
 import numpy as np 
 import cv2 
-import data_utils
+from . import data_utils
 import matplotlib.pyplot as plt
 
 skeleton = [
@@ -10,7 +10,7 @@ skeleton = [
     [3, 0]
 ]
 
-def gen_paf(im, line, sigma=3, eps=1e-6):
+def gen_paf(im, line, sigma=5, eps=1e-6):
     """
     generate paf for 2 keypoints
     :param im: image
@@ -61,6 +61,7 @@ def gen_paf_groundtruth(im, list_pts):
         format: [[tl1, tr1, br1, bl1]
             [...]]
     """
+    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(128, 128))
     im_h, im_w = im.shape[:2]
     paf_mat = np.zeros((im_h, im_w, 2*len(skeleton)))
     paf_mask = np.zeros((im_h, im_w, len(skeleton)))
@@ -75,6 +76,52 @@ def gen_paf_groundtruth(im, list_pts):
     paf_mat = np.divide(paf_mat, paf_mask, out=np.zeros_like(paf_mat), where=paf_mask!=0) 
     # https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/37977222#37977222
     return paf_mat
+
+def gen_heatmap_groundtruth(im, list_pts):
+    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(128, 128))
+    heatmap = np.zeros([128, 128, 4])
+    mask = np.zeros([128, 128])
+    for pts in list_pts:
+        size = data_utils.getSizePolygon(pts)
+        radius = data_utils.calcRadius(size)
+        for i in range(4):
+            center = pts[i]   
+            x, y = center  
+            mask[y, x] = 1
+            data_utils.draw_gaussian(heatmap[:, :, i], center, radius=radius)
+    return heatmap, mask
+
+def gen_offset_groundtruth(im, list_pts):
+    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(512, 512))
+    ratio = 4
+    offset = np.zeros((128, 128, 2))
+    for pts in list_pts:
+        for i in range(pts.shape[0]):
+            corner_loc = pts[i]
+            corner_loc_map_raw = corner_loc / ratio
+            corner_loc_map = np.floor(corner_loc_map_raw)
+            offset_value = corner_loc_map_raw - corner_loc_map
+            x, y = corner_loc_map.astype(np.int)
+            offset[y, x] = offset_value
+    return offset
+
+def gen_groundtruth(im, list_pts):
+    heatmap, mask = gen_heatmap_groundtruth(im ,list_pts)
+    offset = gen_offset_groundtruth(im, list_pts)
+    paf = gen_paf_groundtruth(im, list_pts)
+    groundtruth = np.vstack((heatmap, paf, offset, mask))
+    im_resize, _ = data_utils.resize_box_and_im(im, [], size=(512, 512))
+    data = {
+        'image': im_resize,
+        'mask': groundtruth
+    }
+    # out = {
+    #     'heatmap': heatmap.astype('float32'), 
+    #     'offset': offset.astype('float32'),
+    #     'paf': paf.astype('float32'),
+    #     'mask': mask.astype('float32')
+    # }
+    return data
 
 if __name__=='__main__':
     im = np.zeros((512, 512, 3), dtype=np.uint8)
@@ -99,81 +146,14 @@ if __name__=='__main__':
         [250, 400],
         [50, 350]]     
     ]
-    """
-    # pts = [
-    #     [50, 50],
-    #     [400, 60],
-    #     [450, 300],
-    #     [30, 250]
-    # ]
-    # line = [
-    #     [50, 50],
-    #     [500, 100]
-    # ]
-    for pts in list_pts:
-        pts = np.array(pts).reshape(4, 1, 2)
-        cv2.polylines(im, [pts], 1, (255, 255, 255), 5)
-        # for pt in pts:
-        #     cv2.circle(im, tuple(pt), 3, (255, 255, 255), -1)
-    cv2.imwrite('a.png', im)
+    list_pts = np.array(list_pts).reshape(-1, 4, 2)
 
-    im_h, im_w = im.shape[:2]
-    paf_mat = np.zeros((im_h, im_w, 2*len(skeleton)))
-    paf_mask = np.zeros((im_h, im_w, len(skeleton)))
-
-    for pts in list_pts:
-        for i in range(len(skeleton)):
-            part = skeleton[i]
-            line = [pts[part[0]], pts[part[1]]]
-            # print(line)
-            mask, paf = gen_paf(im, line)
-            # print(mask.shape, paf.shape)
-            # print(i)
-            paf_mat[:, :, i*2: 2*(i+1)] += paf 
-            paf_mask[:, :, i] += mask
-            # print(np.unique(paf[:, :, 0]), np.unique(paf[:, :, 1]))
-            # sum_paf = np.sum(paf**2, axis=2)
-            # print(np.unique(sum_paf))
-            # sum_paf = (sum_paf*255).astype(np.uint8)
-            # cv2.imwrite('{}.png'.format(part[0]), sum_paf)
-    paf_mask = np.repeat(paf_mask, 2, axis=-1)
-    print(paf_mask.shape)
-    print(np.max(paf_mask[:, :, 0] - paf_mask[:, :, 1]))
-    average_mask = np.sum(paf_mask, axis=(0, 1)).reshape(1, 1, 2*len(skeleton))
-    print(average_mask.shape)
-    print(average_mask)
-    # paf_mat = paf_mat / paf_mask[paf_mask!=0]
-    paf_mat = np.divide(paf_mat, paf_mask, out=np.zeros_like(paf_mat), where=paf_mask!=0) 
-    #refer https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/37977222#37977222
-    print(paf_mat.shape)
-    """
 
     paf_mat = gen_paf_groundtruth(im, list_pts)
 
-    """
-    #@@@ visual check
-    # fig = plt.figure(dpi=500)
-    rx_ = paf_mat[:, :, 2]
-    ry_ = paf_mat[:, :, 3]
-    x_show = rx_ / (np.sqrt(rx_**2 + ry_**2)+1e-6)
-    y_show = ry_ / (np.sqrt(rx_**2 + ry_**2)+1e-6)
-    plt.quiver(x_show, y_show)
-    plt.show()
-    # plt.savefig('d.png')
-    """
-
-    
     for i in range(len(skeleton)):
         sum_paf = np.sum(paf_mat[:, :, 2*i: 2*(i+1)]**2, axis=2)
         sum_paf = (sum_paf*255).astype(np.uint8)
-        print(np.unique(sum_paf))
+#         print(np.unique(sum_paf))
         cv2.imwrite('{}.png'.format(i), sum_paf)
 
-
-    # paf = gen_paf(im, line)
-    # # paf_x = paf[:, :, 0]
-    # # paf_y = paf[:, :, 1]
-    # sum_paf = np.sum(paf**2, axis=2)
-    # sum_paf = (sum_paf*255).astype(np.uint8)
-    # print(np.unique(sum_paf))
-    # cv2.imwrite('b.png', sum_paf)
