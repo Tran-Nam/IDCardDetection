@@ -60,24 +60,30 @@ def net(inputs,
         is_training=is_training
     )
 
-    aff_map = part_aff(
-        fea_map,
-        num_repeats=3,
-        out_dim=8,
-        is_training=is_training
-    )
+    # aff_map = part_aff(
+    #     fea_map,
+    #     num_repeats=3,
+    #     out_dim=8,
+    #     is_training=is_training
+    # )
 
-    com_map = tf.concat([fea_map, aff_map], 3)
+    # com_map = tf.concat([fea_map, aff_map], 3)
 
     heatmap = heat(
-        com_map,
+        fea_map,
         out_dim=4,
         is_training=is_training
     )
 
     offmap = offset(
-        com_map, 
+        fea_map, 
         out_dim=2,
+        is_training=is_training
+    )
+
+    aff_map = part_aff(
+        fea_map,
+        out_dim=8,
         is_training=is_training
     )
 

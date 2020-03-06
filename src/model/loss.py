@@ -24,6 +24,8 @@ def offset_loss(pred, gt, mask):
     # return tf.reduce_mean(tf.multiply(l1_loss, mask))
 
 def focal_loss(pred, gt, alpha=2, beta=4):
+    #n_sample_per_batch = gt.get_shape().as_list()[0]
+    pred = tf.nn.sigmoid(pred)####### important
     zeros = array_ops.zeros_like(pred, dtype=pred.dtype)
     ones = array_ops.ones_like(pred, dtype=pred.dtype)
     gt = tf.cast(gt, dtype=pred.dtype)
@@ -33,12 +35,13 @@ def focal_loss(pred, gt, alpha=2, beta=4):
     per_entry_loss = -(pos_p_sub**alpha * tf.log(tf.clip_by_value(pred, 1e-8, 1.0)) \
         + reduce_penalty**beta * neg_p_sub**alpha * tf.log(tf.clip_by_value(1-pred, 1e-8, 1.0)))
     # print(per_entry_loss.get_shape())
-    # return tf.reduce_sum(per_entry_loss)
-    return tf.reduce_mean(per_entry_loss)
+    return tf.reduce_sum(per_entry_loss)# / tf.convert_to_tensor(n_sample_per_batch)
+    # return tf.reduce_mean(per_entry_loss)
 
 def mse_loss(pred, gt):
-    # return tf.reduce_sum(tf.keras.losses.MSE(pred, gt))
-    return tf.reduce_mean(tf.keras.losses.MSE(pred, gt))
+    #n_sample_per_batch = gt.get_shape().as_list()[0]
+    return tf.reduce_sum(tf.keras.losses.MSE(pred, gt))# / tf.convert_to_tensor(n_sample_per_batch)
+    # return tf.reduce_mean(tf.keras.losses.MSE(pred, gt))
 
 def loss(pred, gt):
     hm_gt = gt[:, :, :, 0:4]

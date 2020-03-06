@@ -20,8 +20,10 @@ def parser(record):
 
     parsed = tf.parse_single_example(record, keys_to_features)
 
-    image = tf.decode_raw(parsed['image'], tf.float32)
+    # image = tf.decode_raw(parsed['image'], tf.float32)
     # image = tf.cast(image, tf.float32) *1./255
+    image = tf.decode_raw(parsed['image'], tf.uint8)
+    image = tf.cast(image, tf.float32) *1./255
     image = tf.reshape(image, [512, 512, 3])
     heatmap = tf.decode_raw(parsed['heatmap'], tf.float32)
     heatmap = tf.reshape(heatmap, [128, 128, 4])

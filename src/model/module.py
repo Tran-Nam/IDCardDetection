@@ -130,37 +130,65 @@ def offset(inputs,
         )
         return x 
 
-def part_aff(inputs,
-    num_repeats=3,
-    out_dim=8,
+# def part_aff(inputs,
+#     num_repeats=3,
+#     out_dim=8,
+#     is_training=True,
+#     prefix=''):
+#     """
+#     module detect part affinity field
+#     """
+#     in_dim = inputs.get_shape().as_list()[3]
+#     with tf.variable_scope(prefix+'aff'):
+#         x = conv_block(
+#             inputs,
+#             in_dim,
+#             kernel_size=3,
+#             strides=(1, 1),
+#             use_batchnorm=True,
+#             use_relu=True,
+#             is_training=is_training,
+#             prefix='block_0'
+#         )
+#         if num_repeats > 1:
+#             for bidx in range(1, num_repeats):
+#                 x = tf.concat([inputs, x], 3)
+#                 x = conv_block(
+#                     x,
+#                     out_dim,
+#                     kernel_size=3,
+#                     strides=(1, 1),
+#                     use_batchnorm=True,
+#                     use_relu=True,
+#                     is_training=is_training,
+#                     prefix='block_{}'.format(bidx)
+#                 )
+#         return x
+
+def part_aff(inputs, 
+    out_dim=8, 
     is_training=True,
-    prefix=''):
+    prefix=''): # offset
     """
-    module detect part affinity field
+    module detect offset of point in heatmap
     """
     in_dim = inputs.get_shape().as_list()[3]
-    with tf.variable_scope(prefix+'aff'):
+    with tf.variable_scope(prefix+'paf'):
         x = conv_block(
             inputs,
-            in_dim,
-            kernel_size=3,
-            strides=(1, 1),
-            use_batchnorm=True,
-            use_relu=True,
-            is_training=is_training,
-            prefix='block_0'
+            in_dim, 
+            kernel_size=3, 
+            use_batchnorm=False, 
+            use_relu=True, 
+            is_training=is_training
         )
-        if num_repeats > 1:
-            for bidx in range(1, num_repeats):
-                x = tf.concat([inputs, x], 3)
-                x = conv_block(
-                    x,
-                    out_dim,
-                    kernel_size=3,
-                    strides=(1, 1),
-                    use_batchnorm=True,
-                    use_relu=True,
-                    is_training=is_training,
-                    prefix='block_{}'.format(bidx)
-                )
-        return x
+        x = conv_block(
+            x, 
+            out_dim, 
+            kernel_size=1, 
+            use_batchnorm=False,
+            use_relu=False,
+            is_training=is_training,
+            prefix='last_conv'
+        )
+        return x 
