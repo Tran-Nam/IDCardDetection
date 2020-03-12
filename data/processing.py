@@ -10,7 +10,7 @@ skeleton = [
     [3, 0]
 ]
 
-def gen_paf(im, line, sigma=5, eps=1e-6):
+def gen_paf(im, line, sigma=2, eps=1e-6):
     """
     generate paf for 2 keypoints
     :param im: image
@@ -61,7 +61,7 @@ def gen_paf_groundtruth(im, list_pts):
         format: [[tl1, tr1, br1, bl1]
             [...]]
     """
-    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(128, 128))
+    im, list_pts = data_utils.resize(im, list_pts, side=128)
     im_h, im_w = im.shape[:2]
     paf_mat = np.zeros((im_h, im_w, 2*len(skeleton)))
     paf_mask = np.zeros((im_h, im_w, len(skeleton)))
@@ -78,7 +78,8 @@ def gen_paf_groundtruth(im, list_pts):
     return paf_mat
 
 def gen_heatmap_groundtruth(im, list_pts):
-    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(128, 128))
+    im, list_pts = data_utils.resize(im, list_pts, side=128)
+    # print(list_pts)
     heatmap = np.zeros([128, 128, 4])
     mask = np.zeros([128, 128])
     for pts in list_pts:
@@ -92,7 +93,7 @@ def gen_heatmap_groundtruth(im, list_pts):
     return heatmap, mask
 
 def gen_offset_groundtruth(im, list_pts):
-    im, list_pts = data_utils.resize_box_and_im(im, list_pts, size=(512, 512))
+    im, list_pts = data_utils.resize(im, list_pts, side=512)
     ratio = 4
     offset = np.zeros((128, 128, 2))
     for pts in list_pts:
@@ -107,10 +108,11 @@ def gen_offset_groundtruth(im, list_pts):
 
 def gen_groundtruth(im, list_pts):
     heatmap, mask = gen_heatmap_groundtruth(im ,list_pts)
+    mask = np.expand_dims(mask, axis=-1)
     offset = gen_offset_groundtruth(im, list_pts)
     paf = gen_paf_groundtruth(im, list_pts)
-    groundtruth = np.vstack((heatmap, paf, offset, mask))
-    im_resize, _ = data_utils.resize_box_and_im(im, [], size=(512, 512))
+    groundtruth = np.concatenate((heatmap, paf, offset, mask), axis=2)
+    im_resize, _ = data_utils.resize(im, [], side=512)
     data = {
         'image': im_resize,
         'mask': groundtruth
