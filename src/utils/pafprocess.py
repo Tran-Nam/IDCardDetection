@@ -14,12 +14,19 @@ NUM_LIMBS = config.NUM_LIMBS
 LIMBS = config.LIMBS
 PAF_XY_COORDS_PER_LIMB = config.PAF_XY_COORDS_PER_LIMB
 
+PEAK_THRESHOLD = 0.4
+MINIMUM_NUM_JOINT = 4
+CONFIDENT_SCORE_LIMB = 0.5
+
 # sample_path = '../../data/sample.pkl'
 # with open(sample_path, 'rb') as f:
 #     sample = pickle.load(f)
 # heatmap = sample['heatmap']
 # paf = sample['paf']
 # print(heatmap.shape, paf.shape)
+
+def sigmoid(x):
+    return 1 / (1+np.exp(-x))
 
 def imshow(im):
     if len(im.shape)==3:
@@ -98,7 +105,7 @@ def find_connected_joints(paf, joints_list_per_type, num_inter_points=10):
                     score_inter_pts = np.dot(inter_paf, limb_dir) # score 
                     score = score_inter_pts.mean()
                     score_penalizing_long_dist = score_inter_pts.mean()+min(0.5*paf.shape[0]/limb_dist-1, 0) # penalty long distance
-                    criteria1 = (np.count_nonzero(score_inter_pts>0.6) > 0.5*num_inter_points) # no. score > threshold at least 40%
+                    criteria1 = (np.count_nonzero(score_inter_pts>CONFIDENT_SCORE_LIMB) > 0.4*num_inter_points) # no. score > threshold at least 40%
                     criteria2 = (score_penalizing_long_dist>-10)
                     if criteria1:# check criteria, criteria2???!!
                         connection_candidate.append(
@@ -177,14 +184,15 @@ def group_limbs_same_idcard(connected_limbs, joint_list):
     # delete idcard has very few limbs
     idcard_to_delete = []
     for idcard_id, idcard_info in enumerate(idcard_to_joint_assoc):
-        if idcard_info[-1] < 2 or idcard_info[-2]/idcard_info[-1] < 0.2: # not enough 4 corner
+        if idcard_info[-1] < MINIMUM_NUM_JOINT or idcard_info[-2]/idcard_info[-1] < 0.2: # not enough 4 corner
             idcard_to_delete.append(idcard_id)     
     for index in idcard_to_delete[::-1]:
         idcard_to_joint_assoc.pop(index)
     return np.array(idcard_to_joint_assoc)
 
 def paf_to_idcard(heatmap, paf, offset, ratio=4):
-    joints_per_type = find_joints(heatmap, 0.5)
+    heatmap = sigmoid(heatmap)
+    joints_per_type = find_joints(heatmap, PEAK_THRESHOLD)
     joints_list = np.array([
         tuple(peak) + (joint_type, ) for joint_type, joint_peak in enumerate(joints_per_type) for peak in joint_peak
     ]) 
