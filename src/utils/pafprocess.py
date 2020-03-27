@@ -14,8 +14,8 @@ NUM_LIMBS = config.NUM_LIMBS
 LIMBS = config.LIMBS
 PAF_XY_COORDS_PER_LIMB = config.PAF_XY_COORDS_PER_LIMB
 
-PEAK_THRESHOLD = 0.4
-MINIMUM_NUM_JOINT = 4
+PEAK_THRESHOLD = 0.3
+MINIMUM_NUM_JOINT = 1
 CONFIDENT_SCORE_LIMB = 0.5
 
 # sample_path = '../../data/sample.pkl'
@@ -39,6 +39,7 @@ def find_peaks(im, thresh):
     """
     find local maximum and has value greater than threshold
     """
+    im = cv2.GaussianBlur(im, (3, 3), 0)
     peaks_binary = (maximum_filter(im, footprint=generate_binary_structure(2, 1))==im) * (im>thresh)
     peaks_idx = np.array(np.nonzero(peaks_binary)[::-1]).T ## reverve to get [x, y] coordinate
     return peaks_idx
@@ -77,9 +78,11 @@ def find_connected_joints(paf, joints_list_per_type, num_inter_points=10):
     connnected_limbs = []
     limb_inter_coord = np.empty((4, num_inter_points), dtype=np.intp) # store info of interpoints x,y coords paf, id of paf correspond limbs
     for limb_type in range(NUM_LIMBS):
-        # print(limbs[limb_type])
+        # print(LIMBS[limb_type])
         joints_src = joints_list_per_type[LIMBS[limb_type][0]]
         joints_dst = joints_list_per_type[LIMBS[limb_type][1]]
+        # print('JOINT SRC', joints_src)
+        # print('JOINT DST', joints_dst)
         if len(joints_src)==0 or len(joints_dst)==0: # if limb type has no candidate (peak)
             connnected_limbs.append([])
         else:
@@ -104,8 +107,10 @@ def find_connected_joints(paf, joints_list_per_type, num_inter_points=10):
 
                     score_inter_pts = np.dot(inter_paf, limb_dir) # score 
                     score = score_inter_pts.mean()
+                    # print(score)
                     score_penalizing_long_dist = score_inter_pts.mean()+min(0.5*paf.shape[0]/limb_dist-1, 0) # penalty long distance
-                    criteria1 = (np.count_nonzero(score_inter_pts>CONFIDENT_SCORE_LIMB) > 0.4*num_inter_points) # no. score > threshold at least 40%
+                    criteria1 = (np.count_nonzero(score_inter_pts>CONFIDENT_SCORE_LIMB) > 0.6*num_inter_points) # no. score > threshold at least 60%
+                    # print(criteria1)
                     criteria2 = (score_penalizing_long_dist>-10)
                     if criteria1:# check criteria, criteria2???!!
                         connection_candidate.append(
@@ -114,6 +119,8 @@ def find_connected_joints(paf, joints_list_per_type, num_inter_points=10):
                         )
 
             connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True) # sorted by score 
+            # for con in connection_candidate:
+            #     print('CONNECTION CANDIDATE', con)
             connections = np.empty((0, 5), dtype=np.int)
             max_connections = min(len(joints_src), len(joints_dst))
             for potential_connection in connection_candidate:
@@ -125,6 +132,7 @@ def find_connected_joints(paf, joints_list_per_type, num_inter_points=10):
                     )
                     if len(connections) >= max_connections:
                         break
+            # print('CONNECTION', connections)
 
             connnected_limbs.append(connections)
     return connnected_limbs
@@ -145,14 +153,19 @@ def group_limbs_same_idcard(connected_limbs, joint_list):
         for limb_info in connected_limbs[limb_type]:
             idcard_assoc_idx = []
             # find joints current in list
+            # print('CURRENT IDCARD', idcard_to_joint_assoc)
             for idcard, idcard_limbs in enumerate(idcard_to_joint_assoc):
+                # print('IDCARD LIMBS', idcard_limbs)
+                # print('LIMB INFO', limb_info)
                 if idcard_limbs[joint_src_type]==limb_info[0] or \
                     idcard_limbs[joint_dst_type]==limb_info[1]: # if already in list
+                    # print('INDEX', idcard)
                     idcard_assoc_idx.append(idcard) # append index to check later
-                    
+            # print('IDCARD ASSOC IDX', idcard_assoc_idx)
             if len(idcard_assoc_idx)==1: # found 1 joints
                 idcard_limbs = idcard_to_joint_assoc[idcard_assoc_idx[0]]
                 if idcard_limbs[joint_dst_type]!=limb_info[1]: # add to list
+                    idcard_limbs[joint_src_type] = limb_info[0]
                     idcard_limbs[joint_dst_type] = limb_info[1]
                     # update info: score, num joints in limbs
                     idcard_limbs[-1] += 1
@@ -164,12 +177,23 @@ def group_limbs_same_idcard(connected_limbs, joint_list):
                 idcard1_limbs = idcard_to_joint_assoc[idcard_assoc_idx[0]]
                 idcard2_limbs = idcard_to_joint_assoc[idcard_assoc_idx[1]]
                 membership = ((idcard1_limbs>=0)&(idcard2_limbs>=0))[:-2]
+                # print(idcard1_limbs>=0, idcard2_limbs>=0)
+                # print(membership)
+                # print('IDCARD 1', idcard1_limbs)
+                # print('IDCARD 2', idcard2_limbs)
                 if not membership.any(): # if 2 idcard has no connect joint, merge them
                     idcard1_limbs[:-2] += (idcard2_limbs[:-2]+1) # update joint connected
                     idcard1_limbs[-2:] += idcard2_limbs[-2:] # add score
                     idcard1_limbs[-2] += limb_info[2] # overall score
                     idcard_to_joint_assoc.pop(idcard_assoc_idx[1])
                 else: # same with len==1 above
+                    # print('CASE')
+                    if np.sum((idcard1_limbs>=0)[:-2]) < np.sum((idcard2_limbs>=0)[:-2]):
+                        idcard1_limbs = idcard2_limbs
+                        idcard_to_joint_assoc.pop(idcard_assoc_idx[0])
+                    else:
+                        idcard_to_joint_assoc.pop(idcard_assoc_idx[1])
+                    idcard1_limbs[joint_src_type] = limb_info[0]
                     idcard1_limbs[joint_dst_type] = limb_info[1]
                     idcard1_limbs[-1] += 1
                     idcard1_limbs[-2] += joint_list[limb_info[1].astype(int), 2] + limb_info[2]
@@ -193,20 +217,34 @@ def group_limbs_same_idcard(connected_limbs, joint_list):
 def paf_to_idcard(heatmap, paf, offset, ratio=4):
     heatmap = sigmoid(heatmap)
     joints_per_type = find_joints(heatmap, PEAK_THRESHOLD)
+    # print('JOINT_PER_TYPE')
+    # for joint in joints_per_type:
+    #     print(joint)
     joints_list = np.array([
         tuple(peak) + (joint_type, ) for joint_type, joint_peak in enumerate(joints_per_type) for peak in joint_peak
     ]) 
-    connected_limbs = find_connected_joints(paf, joints_per_type)      
+    connected_limbs = find_connected_joints(paf, joints_per_type)    
+    # print('CONNECTED LIMBS')
+    # for limb in connected_limbs:
+    #     print(limb)
     idcard_to_joint_assoc = group_limbs_same_idcard(connected_limbs, joints_list)
-
-    idcards = []
+    # print('IDCARD JOINT ASSOC')
+    # for joint_assoc in idcard_to_joint_assoc:
+    #     print(joint_assoc)
+    results = {
+        'pts': [],
+        'missing_corners': []
+    }
+    # idcards = []
     for idcard_id, idcard_info in enumerate(idcard_to_joint_assoc):
         joints = idcard_info[: NUM_JOINTS]
         idcard_score = idcard_info[-2]
         idcard = np.zeros((9, ), dtype=np.float32)
+        missing_corners = []
         for i in range(NUM_JOINTS):
             joint = joints[i]
             if joint==-1: #not found joint
+                missing_corners.append(i)
                 continue     
             peak_coord = joints_list[int(joint)][:2]         
             x, y = peak_coord.astype('int')
@@ -215,8 +253,9 @@ def paf_to_idcard(heatmap, paf, offset, ratio=4):
             # idcard[2*i: 2*(i+1)] = peak_coord
             idcard[2*i: 2*(i+1)] = (peak_coord*ratio).astype('int')
         idcard[-1] = idcard_score
-        idcards.append(idcard)
-    return idcards
+        results['pts'].append(idcard)
+        results['missing_corners'].append(missing_corners)
+    return results
 
 
 # offset = np.zeros((512, 512, 2))
