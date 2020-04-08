@@ -19,6 +19,8 @@ CUDA_VISIBLE_DEVICES=0 python demo.py
                             [--save_paf]
 ```
 
+eg: `CUDA_VISIBLE_DEVICES=0 python demo.py --image_dir abc/ --output_dir def/`
+
 # Quickstart
 
 ## 1. Dataset
@@ -45,5 +47,20 @@ b.jpg,600,800,123,123,456,123,456,456,123,456
 ```
 
 ## 2. Training
+
+### 1: Modify config.py
+
+`BATCH_SIZE`: batch_size when train and evaluation
+
+`PRETRAINED`: use pretrained ckpt or not
+
+`PRETRAINED_PATH`: path to pretrained ckpt
+
+`MODEL_DIR`: folder save ckpt while training
+
+### 2: Training
+
+`CUDA_VISIBLE_DEVICES=0 python main.py`
+
 
 
