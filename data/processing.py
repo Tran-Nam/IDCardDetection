@@ -111,8 +111,13 @@ def gen_groundtruth(im, list_pts):
     mask = np.expand_dims(mask, axis=-1)
     offset = gen_offset_groundtruth(im, list_pts)
     paf = gen_paf_groundtruth(im, list_pts)
+    # heatmap = np.expand_dims(heatmap, axis=0)
+    mask = np.expand_dims(mask, axis=-1)
+    # offset = np.expand_dims(offset, axis=0)
+    # paf = np.expand_dims(paf, axis=0)
+    # print(heatmap.shape, mask.shape, offset.shape, paf.shape)
     groundtruth = np.concatenate((heatmap, paf, offset, mask), axis=2)
-    im_resize, _ = data_utils.resize(im, [], side=512)
+    im_resize, _ = data_utils.resize_box_and_im(im, [], size=(512, 512))
     data = {
         'image': im_resize,
         'mask': groundtruth
