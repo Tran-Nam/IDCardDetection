@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=0 python demo.py
                             [--save_paf]
 ```
 
-eg: `CUDA_VISIBLE_DEVICES=0 python demo.py --image_dir abc/ --output_dir def/`
+eg: `CUDA_VISIBLE_DEVICES=0 python demo.py --model_path 1000.ckpt --image_dir abc/ --output_dir def/`
 
 # Quickstart
 
