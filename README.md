@@ -4,25 +4,55 @@ Multiple idcard detection
 
 # Requirements
 
-pip install requirement.txt
+pip install requirements.txt
 
 # Demo
 
 `cd src/`
 
 `CUDA_VISIBLE_DEVICES=0 python demo.py
+
                             --model_path {MODEL_PATH}
+
                             --image_dir {IMAGE_DIR}
+
                             --output_dir {OUTPUT_DIR}
+
                             [--save_heatmap]
+
                             [--save_paf]`
 
 # Quickstart
 
-## 1. Requirements
+## 1. Dataset
 
-## 2. Dataset
+Structure data root should be:
 
-## 3. Training
+{DATA_ROOT}
+
+|-- data
+
+    |-- train
+
+        |-- images
+
+        label.csv
+
+    |-- val
+
+        |-- images
+
+        |-- label.csv
+
+..* label.csv has format
+
+... filename,width,height,tlx,tly,trx,try,brx,bry,blx,bly
+
+... a.jpg,624,1001,572,91,577,871,75,934,46,45
+
+... ...
+
+
+## 2. Training
 
 
