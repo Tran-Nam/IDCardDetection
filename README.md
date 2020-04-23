@@ -60,7 +60,7 @@ b.jpg,600,800,123,1,123,456,123,456,456,123,456
 
 `NUM_CLASSES`: number of object classes (note: each classes must have same joint)
 
-`LABEL_MAP`: label map of object, must same as `class` in file `label.py`
+`LABEL_MAP`: label map of object, must same as `class` in file `label.csv`
 
 ### 2: Training
 
