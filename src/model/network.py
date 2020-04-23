@@ -1,6 +1,11 @@
 import tensorflow as tf 
+import sys 
+sys.path.append('..')
+import config
 from .module import *
 from .efficentnet import EfficentNetB0, EfficentNetB1, EfficentNetB2, EfficentNetB3
+
+num_classes = config.NUM_CLASSES
 
 def backbone(inputs,
     is_training=True,
@@ -71,7 +76,7 @@ def net(inputs,
 
     heatmap = heat(
         fea_map,
-        out_dim=4,
+        out_dim=4*num_classes,
         is_training=is_training
     )
 
@@ -87,13 +92,15 @@ def net(inputs,
         is_training=is_training
     )
 
-    output = {
-        'affi': aff_map,
-        'heatmap': heatmap,
-        'offset': offmap
-    }
+    # output = {
+    #     'affi': aff_map,
+    #     'heatmap': heatmap,
+    #     'offset': offmap
+    # }
+    output = tf.concat([
+        heatmap, aff_map, offmap
+    ], axis=3)
+    #print(output.shape)
 
-    # for i, j in output.items():
-    #     print(i, j.get_shape())
-    # print('='*50)
+    
     return output
