@@ -1,0 +1,8 @@
+\contentsline {section}{\numberline {1}GI\IeC {\'\OHORN }I THI\IeC {\d \ECIRCUMFLEX }U \IeC {\DJ }\IeC {\`\ECIRCUMFLEX } T\IeC {\`A}I}{4}
+\contentsline {subsection}{\numberline {1.1}M\IeC {\^o} t\IeC {\h a} b\IeC {\`a}i to\IeC {\'a}n nh\IeC {\d \acircumflex }n di\IeC {\d \ecircumflex }n ch\IeC {\'\uhorn }ng minh nh\IeC {\^a}n d\IeC {\^a}n}{4}
+\contentsline {subsection}{\numberline {1.2}Ph\IeC {\uhorn }\IeC {\ohorn }ng ph\IeC {\'a}p truy\IeC {\`\ecircumflex }n th\IeC {\'\ocircumflex }ng}{4}
+\contentsline {section}{\numberline {2}C\IeC {\OHORN } S\IeC {\h \OHORN } L\IeC {\'Y} THUY\IeC {\'\ECIRCUMFLEX }T}{5}
+\contentsline {subsection}{\numberline {2.1}Tr\IeC {\`\acircumflex }n Thu Ph\IeC {\uhorn }\IeC {\ohorn }ng}{6}
+\contentsline {subsection}{\numberline {2.2}CornerNet}{7}
+\contentsline {subsection}{\numberline {2.3}EfficentNet}{7}
+\contentsline {section}{\numberline {3}K\IeC {\'\ECIRCUMFLEX }T QU\IeC {\h A} TH\IeC {\d \UHORN }C NGHI\IeC {\d \ECIRCUMFLEX }M}{8}

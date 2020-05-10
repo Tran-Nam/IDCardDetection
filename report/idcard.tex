@@ -1,0 +1,86 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{vietnam}
+\usepackage{import}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{hyphenat}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\fancyhead[L]{\slshape \MakeUppercase{ĐỒ ÁN TỐT NGHIỆP}}
+\fancyhead[R]{\slshape TRẦN PHƯƠNG NAM}
+\fancyfoot[C]{\thepage}
+
+\author{TRẦN PHƯƠNG NAM}
+\LARGE \title{ \textbf{ĐỒ ÁN TỐT NGHIỆP}}
+
+
+
+
+\begin{document}
+
+%\maketitle
+
+\begin{titlepage}
+\begin{center}
+%\vspace*{1cm}
+\Large{\textbf{ĐẠI HỌC BÁCH KHOA HÀ NỘI}}\\[3mm]
+\Large{\textbf{VIỆN CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG}}\\[3mm]
+%\vfill
+\vspace{7cm}
+\huge{\textbf{ĐỒ ÁN TỐT NGHIỆP}}\\[5mm]
+\huge{\textbf{TITLE THESIS}}\\[3mm]
+\Large{\textbf{TRẦN PHƯƠNG NAM}}\\[1mm]
+\Large{nam.tp152610@sis.hust.edu.vn}\\
+
+\vspace{6cm}
+\begin{tabular}{ll}
+Mã số sinh viên & : 20152610 \\
+Giáo viên hướng dẫn & : TS. Đinh Viết Sang
+\end{tabular}
+\vfill
+
+\today
+\end{center}
+\end{titlepage}
+
+
+
+\tableofcontents
+\pagebreak
+\renewcommand{\thefigure}{\arabic{section}.\arabic{figure}} % change index name of the figure
+\renewcommand{\thetable}{\arabic{section}.\arabic{table}} % change index name of the tableable
+
+
+\listoftables
+\pagebreak
+
+\listoffigures
+\pagebreak
+
+
+\pagebreak
+
+\import{GTDT/}{intro.tex}
+
+\pagebreak
+%
+\setcounter{figure}{0}
+\setcounter{table}{0}
+
+
+\import{CSLT/}{background.tex}
+
+\pagebreak
+
+\import{KQTN/}{experience.tex}
+
+
+\end{document}

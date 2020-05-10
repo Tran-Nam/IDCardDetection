@@ -1,0 +1,48 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{vietnam}
+\usepackage{import}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{hyphenat}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+
+\renewcommand\theadalign{bl}
+%\renewcommand\theadfont{\bfseries}
+%\renewcommand\theadgape{\Gape[4pt]}
+%\renewcommand\cellgape{\Gape[4pt]}
+
+\begin{document}
+\begin{center}
+\begin{tabular}{|p{2cm}|p{2cm}|p{12cm}|}
+%\hline
+%\thead{A Head} & \thead{A Second \\ Head} & \thead{A Third \\ Head} \\
+\hline
+\thead{Chương} & \thead{Phần} & \thead{Nội dung}\\
+\hline
+\multirow{2}{*}{Giới thiệu} & Giới thiệu bài toán & Mô tả bài toán: phát hiện và transform giấy tờ tùy thân xuất hiện trong ảnh\\
+\cline{2-3} & Hướng tiếp cận truyền thống & Phương pháp đã được triển khai: phát hiện 4 góc của chứng minh thư như là 4 đối tượng riêng biệt rồi tổng hợp kết quả. \newline
+Hạn chế:
+\begin{itemize}
+\item Tạo dữ liệu training: bounding box của góc, kích thước, diện tích, vị trí, ... 
+\item Không tận dụng được mối liên quan giữa các góc của chứng minh thư trong ảnh 
+\item Các góc có các đặc tính tương đối giống nhau, xảy ra trường hợp mô hình phát hiện ra các góc trùng nhau
+\item Chỉ áp dụng được cho trường hợp có nhiều nhất 1 chứng minh thư trong ảnh 
+\end{itemize}
+\\
+\hline 
+\multirow{3}{*}{Cơ sở lý thuyết} & Học máy và học sâu & \\
+\cline{2-3} & Mạng openpose & abc \\
+\cline{2-3} & abc & cdba \\
+\hline
+
+
+\end{tabular}
+\end{center}
+\end{document}
